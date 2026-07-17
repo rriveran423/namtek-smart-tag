@@ -6,8 +6,8 @@ const body = DM_Sans({ subsets: ["latin"], variable: "--font-body" });
 const display = Manrope({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
-  title: { default: "Namtek — One tap. Your whole story.", template: "%s · Namtek" },
-  description: "Create and manage the digital identity behind your Namtek smart tag.",
+  title: { default: "NamTek Smart Tag — Lost luggage has a way home", template: "%s · NamTek" },
+  description: "QR travel tags with secure activation, private finder contact, and consent-based scan location history.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
