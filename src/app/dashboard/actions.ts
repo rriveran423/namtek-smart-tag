@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { sendMessageNotifications } from "@/lib/notifications";
 
 export async function updateTag(formData: FormData) {
   const supabase = await createClient();
@@ -12,7 +13,17 @@ export async function updateTag(formData: FormData) {
   if (!user) redirect("/login");
   const id = String(formData.get("id"));
   const trackerUrl = String(formData.get("tracker_url") ?? "").trim();
-  if (trackerUrl && !/^https:\/\//i.test(trackerUrl)) redirect("/dashboard?error=Tracker%20link%20must%20start%20with%20https%3A%2F%2F");
+  if (trackerUrl && !/^https:\/\//i.test(trackerUrl))
+    redirect(
+      "/dashboard?error=Tracker%20link%20must%20start%20with%20https%3A%2F%2F",
+    );
+  const notificationSmsPhone = String(
+    formData.get("notification_sms_phone") ?? "",
+  ).trim();
+  if (notificationSmsPhone && !/^\+[1-9]\d{7,14}$/.test(notificationSmsPhone))
+    redirect(
+      "/dashboard?error=SMS%20number%20must%20include%20country%20code%2C%20for%20example%20%2B17875551234",
+    );
   const values = {
     traveler_name: String(formData.get("traveler_name")),
     finder_message: String(formData.get("finder_message")),
@@ -41,6 +52,11 @@ export async function updateTag(formData: FormData) {
     tracker_url: trackerUrl || null,
     recovery_packet_enabled: formData.get("recovery_packet_enabled") === "on",
     show_direct_contact: formData.get("show_direct_contact") === "on",
+    notification_email:
+      String(formData.get("notification_email") ?? "").trim() || null,
+    notification_sms_phone: notificationSmsPhone || null,
+    notify_by_email: formData.get("notify_by_email") === "on",
+    notify_by_sms: formData.get("notify_by_sms") === "on",
     show_bag_photo: formData.get("show_bag_photo") === "on",
     show_traveler_photo: formData.get("show_traveler_photo") === "on",
     status: String(formData.get("status")),
@@ -73,10 +89,32 @@ export async function sendOwnerMessage(formData: FormData) {
     .from("recovery_messages")
     .insert({ case_id: caseId, sender_role: "owner", body });
   if (error) redirect(`/dashboard?error=${encodeURIComponent(error.message)}`);
+  const { data: recovery } = await supabase
+    .from("recovery_cases")
+    .select(
+      "finder_email, finder_notify_by_email, finder_reply_code, tags!inner(public_code)",
+    )
+    .eq("id", caseId)
+    .single();
   await supabase
     .from("recovery_cases")
     .update({ status: "contacted", updated_at: new Date().toISOString() })
     .eq("id", caseId);
+  const recoveryTag = recovery?.tags as unknown as
+    | { public_code: string }
+    | undefined;
+  if (recovery && recoveryTag) {
+    const origin =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://namtek-smart-tag.vercel.app";
+    await sendMessageNotifications({
+      email: recovery.finder_email,
+      emailEnabled: recovery.finder_notify_by_email,
+      tagCode: recoveryTag.public_code,
+      senderLabel: "The luggage owner",
+      message: body,
+      conversationUrl: `${origin}/recover/${recovery.finder_reply_code}`,
+    });
+  }
   revalidatePath("/dashboard");
   redirect("/dashboard?message=sent");
 }

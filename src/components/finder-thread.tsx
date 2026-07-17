@@ -1,8 +1,12 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LockKeyhole, Send } from "lucide-react";
+import {
+  MessageSoundToggle,
+  playMessageSound,
+} from "@/components/message-sound";
 
 type Thread = {
   case: {
@@ -35,6 +39,7 @@ export function FinderThread({
 }) {
   const [thread, setThread] = useState<Thread | null>(null);
   const [error, setError] = useState("");
+  const latestOwnerMessage = useRef<number | null>(null);
   async function load() {
     const response = await fetch(`/api/recover/${token}`, {
       cache: "no-store",
@@ -43,12 +48,28 @@ export function FinderThread({
       setError("This recovery thread is unavailable.");
       return;
     }
-    setThread(await response.json());
+    const next = (await response.json()) as Thread;
+    const newest = Math.max(
+      0,
+      ...next.messages
+        .filter((message) => message.sender_role === "owner")
+        .map((message) => message.id),
+    );
+    if (
+      latestOwnerMessage.current !== null &&
+      newest > latestOwnerMessage.current
+    )
+      playMessageSound();
+    latestOwnerMessage.current = newest;
+    setThread(next);
   }
   useEffect(() => {
     const initial = window.setTimeout(load, 0);
-    const timer = setInterval(load, 15000);
-    return () => { window.clearTimeout(initial); clearInterval(timer); };
+    const timer = setInterval(load, 3000);
+    return () => {
+      window.clearTimeout(initial);
+      clearInterval(timer);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   async function send(formData: FormData) {
     const message = String(formData.get("message") ?? "");
@@ -96,7 +117,7 @@ export function FinderThread({
             className="h-20 w-20 rounded-2xl object-cover"
           />
         )}
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-wider text-black/40">
             NamTek {thread.tag.public_code}
           </p>
@@ -110,6 +131,7 @@ export function FinderThread({
             </span>
           </p>
         </div>
+        <MessageSoundToggle />
       </section>
       <section className="rounded-3xl bg-white p-5 sm:p-6">
         <p className="mb-5 flex items-center gap-2 text-xs font-bold text-black/45">

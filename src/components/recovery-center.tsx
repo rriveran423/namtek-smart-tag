@@ -7,6 +7,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { TravelTag } from "@/lib/types";
+import { LiveRecoveryUpdates } from "@/components/live-recovery-updates";
 import {
   sendOwnerMessage,
   updateRecoveryStatus,
@@ -43,6 +44,7 @@ export function RecoveryCenter({
           </p>
         </div>
       </div>
+      <div className="mt-5"><LiveRecoveryUpdates /></div>
       {tag.recovery_packet_enabled && (
         <div className="mt-5 rounded-2xl bg-[#eef4ff] p-4">
           <p className="text-xs font-bold uppercase tracking-wider text-[#2454a6]">

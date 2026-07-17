@@ -389,6 +389,55 @@ export default async function Dashboard({
                         </span>
                       </span>
                     </label>
+                    <div className="rounded-2xl border border-black/10 p-4 sm:col-span-2">
+                      <h3 className="font-bold">New-message notifications</h3>
+                      <p className="mt-1 text-xs text-black/45">
+                        Choose how NamTek should alert you when a finder sends a
+                        private message.
+                      </p>
+                      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                        <label className="text-sm font-bold">
+                          Notification email
+                          <input
+                            type="email"
+                            name="notification_email"
+                            defaultValue={
+                              tag.notification_email ?? user.email ?? ""
+                            }
+                            className={field}
+                            placeholder="you@example.com"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          SMS number with country code
+                          <input
+                            type="tel"
+                            name="notification_sms_phone"
+                            defaultValue={tag.notification_sms_phone ?? ""}
+                            className={field}
+                            placeholder="+17875551234"
+                          />
+                        </label>
+                        <label className="flex items-center gap-2 text-sm font-bold">
+                          <input
+                            type="checkbox"
+                            name="notify_by_email"
+                            defaultChecked={tag.notify_by_email}
+                            className="accent-[#2463eb]"
+                          />{" "}
+                          Email me about finder messages
+                        </label>
+                        <label className="flex items-center gap-2 text-sm font-bold">
+                          <input
+                            type="checkbox"
+                            name="notify_by_sms"
+                            defaultChecked={tag.notify_by_sms}
+                            className="accent-[#2463eb]"
+                          />{" "}
+                          Text me about finder messages
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </section>
                 <section className="border-t border-black/10 pt-8">
@@ -396,7 +445,21 @@ export default async function Dashboard({
                     Finder contact & message
                   </h2>
                   <div className="grid gap-5 sm:grid-cols-2">
-                    <label className="flex items-start gap-3 rounded-2xl bg-[#f7f4ec] p-4 text-sm font-bold sm:col-span-2"><input type="checkbox" name="show_direct_contact" defaultChecked={tag.show_direct_contact} className="mt-1 accent-[#ff5a36]"/><span>Show direct phone and email buttons to finders<span className="mt-1 block text-xs font-normal text-black/45">Turn this off to communicate only through NamTek’s private recovery thread.</span></span></label>
+                    <label className="flex items-start gap-3 rounded-2xl bg-[#f7f4ec] p-4 text-sm font-bold sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="show_direct_contact"
+                        defaultChecked={tag.show_direct_contact}
+                        className="mt-1 accent-[#ff5a36]"
+                      />
+                      <span>
+                        Show direct phone and email buttons to finders
+                        <span className="mt-1 block text-xs font-normal text-black/45">
+                          Turn this off to communicate only through NamTek’s
+                          private recovery thread.
+                        </span>
+                      </span>
+                    </label>
                     <label className="text-sm font-bold sm:col-span-2">
                       Finder message
                       <textarea

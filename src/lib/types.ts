@@ -31,6 +31,10 @@ export type TravelTag = {
   recovery_packet_enabled: boolean;
   recovery_share_code: string;
   show_direct_contact: boolean;
+  notification_email: string | null;
+  notification_sms_phone: string | null;
+  notify_by_email: boolean;
+  notify_by_sms: boolean;
   tag_scans?: TagScan[];
   recovery_cases?: RecoveryCase[];
 };
@@ -54,6 +58,9 @@ export type RecoveryCase = {
   id: string;
   finder_name: string | null;
   finder_contact: string | null;
+  finder_email: string | null;
+  finder_notify_by_email: boolean;
+  finder_reply_code: string;
   handoff_type: "still_with_me" | "airline" | "airport_lost_found" | "hotel" | "police" | "other";
   handoff_location: string | null;
   finder_note: string | null;

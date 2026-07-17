@@ -31,6 +31,10 @@ In Supabase Authentication → URL Configuration, add `http://localhost:3000/aut
 
 Never commit `.env.local` or a Supabase secret/service-role key. The publishable key is intended for the browser; RLS protects the data.
 
+## Recovery message notifications
+
+Run migrations `005_recovery_center.sql` and `006_live_notifications.sql`. Secure message threads update automatically every few seconds and offer an opt-in browser sound. For away-from-site alerts, configure the server-only variables shown in `.env.example`: a Supabase secret key, Resend for email, and Twilio for SMS. These credentials belong in Vercel Environment Variables and must never be exposed with a `NEXT_PUBLIC_` prefix.
+
 ## Connecting a physical tag
 
 Program each NFC tag with the owner's public URL, for example `https://your-domain.com/p/alex`. You can use the same URL in a printed QR code.

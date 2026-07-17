@@ -17,6 +17,8 @@ export function FinderHandoff({ code }: { code: string }) {
       body: JSON.stringify({
         name: formData.get("name"),
         contact: formData.get("contact"),
+        email: formData.get("email"),
+        notifyEmail: formData.get("notify_email") === "on",
         handoffType,
         location: formData.get("location"),
         note: formData.get("note"),
@@ -88,6 +90,27 @@ export function FinderHandoff({ code }: { code: string }) {
             className="rounded-xl border border-black/15 px-3 py-3 text-sm outline-none focus:border-[#2463eb]"
             placeholder={t.contactInfo}
           />
+        </div>
+        <div className="rounded-2xl bg-[#f7f4ec] p-4">
+          <input
+            type="email"
+            name="email"
+            className="w-full rounded-xl border border-black/15 bg-white px-3 py-3 text-sm outline-none focus:border-[#2463eb]"
+            placeholder="Email for new-message alerts (optional)"
+          />
+          <label className="mt-3 flex items-start gap-2 text-xs font-bold">
+            <input
+              type="checkbox"
+              name="notify_email"
+              className="mt-0.5 accent-[#2463eb]"
+            />
+            <span>
+              Email me when the luggage owner replies.
+              <span className="mt-1 block font-normal text-black/45">
+                Your email stays private and is used only for this recovery.
+              </span>
+            </span>
+          </label>
         </div>
         <label className="relative block">
           <Building2
