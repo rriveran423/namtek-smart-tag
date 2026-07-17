@@ -15,6 +15,7 @@ import {
 import { Brand } from "@/components/brand";
 import { AirportSearch, AirportStops } from "@/components/airport-search";
 import { ImageUpload } from "@/components/image-upload";
+import { RecoveryCenter } from "@/components/recovery-center";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
 import { signOut, updateTag } from "./actions";
@@ -62,7 +63,7 @@ export default async function Dashboard({
   if (!user) redirect("/login");
   const { data } = await supabase
     .from("tags")
-    .select("*, tag_scans(*)")
+    .select("*, tag_scans(*), recovery_cases(*, recovery_messages(*))")
     .eq("owner_id", user.id)
     .order("created_at", { referencedTable: "tag_scans", ascending: false });
   const tags = (data ?? []) as TravelTag[];
@@ -322,6 +323,72 @@ export default async function Dashboard({
                       placeholder="Type a city, airport, IATA or ICAO code"
                     />
                     <AirportStops defaultValue={tag.route_stops ?? []} />
+                    <label className="text-sm font-bold">
+                      Flight number
+                      <input
+                        name="flight_number"
+                        defaultValue={tag.flight_number ?? ""}
+                        className={field}
+                        placeholder="DL 1923"
+                      />
+                    </label>
+                    <label className="text-sm font-bold">
+                      Airline baggage report / PIR
+                      <input
+                        name="baggage_report_number"
+                        defaultValue={tag.baggage_report_number ?? ""}
+                        className={field}
+                        placeholder="Optional claim reference"
+                      />
+                    </label>
+                  </div>
+                </section>
+                <section className="border-t border-black/10 pt-8">
+                  <h2 className="text-xl font-bold">Recovery tools</h2>
+                  <p className="mt-1 text-sm text-black/45">
+                    Optional details for the secure airline packet. Tracker
+                    links are never shown on the ordinary finder page.
+                  </p>
+                  <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                    <label className="text-sm font-bold">
+                      Tracker service
+                      <select
+                        name="tracker_type"
+                        defaultValue={tag.tracker_type ?? ""}
+                        className={field}
+                      >
+                        <option value="">No tracker link</option>
+                        <option value="apple_find_my">Apple Find My</option>
+                        <option value="google_find_hub">Google Find Hub</option>
+                        <option value="other">Other tracker</option>
+                      </select>
+                    </label>
+                    <label className="text-sm font-bold">
+                      Temporary tracker-sharing link
+                      <input
+                        type="url"
+                        name="tracker_url"
+                        defaultValue={tag.tracker_url ?? ""}
+                        className={field}
+                        placeholder="https://…"
+                      />
+                    </label>
+                    <label className="flex items-start gap-3 rounded-2xl bg-[#eef4ff] p-4 text-sm font-bold sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="recovery_packet_enabled"
+                        defaultChecked={tag.recovery_packet_enabled}
+                        className="mt-1 accent-[#2463eb]"
+                      />
+                      <span>
+                        Enable airline recovery packet
+                        <span className="mt-1 block text-xs font-normal text-black/45">
+                          Creates a secret, shareable page with luggage details,
+                          itinerary, handoffs, scan history, and the optional
+                          tracker link.
+                        </span>
+                      </span>
+                    </label>
                   </div>
                 </section>
                 <section className="border-t border-black/10 pt-8">
@@ -329,6 +396,7 @@ export default async function Dashboard({
                     Finder contact & message
                   </h2>
                   <div className="grid gap-5 sm:grid-cols-2">
+                    <label className="flex items-start gap-3 rounded-2xl bg-[#f7f4ec] p-4 text-sm font-bold sm:col-span-2"><input type="checkbox" name="show_direct_contact" defaultChecked={tag.show_direct_contact} className="mt-1 accent-[#ff5a36]"/><span>Show direct phone and email buttons to finders<span className="mt-1 block text-xs font-normal text-black/45">Turn this off to communicate only through NamTek’s private recovery thread.</span></span></label>
                     <label className="text-sm font-bold sm:col-span-2">
                       Finder message
                       <textarea
@@ -396,6 +464,13 @@ export default async function Dashboard({
                 </button>
               </form>
               <aside className="space-y-5">
+                <RecoveryCenter
+                  tag={tag}
+                  origin={
+                    process.env.NEXT_PUBLIC_SITE_URL ||
+                    "https://namtek-smart-tag.vercel.app"
+                  }
+                />
                 <section className="rounded-3xl bg-[#171713] p-6 text-white">
                   <div className="flex items-center gap-3">
                     <MapPinned className="text-[#d8ff62]" />

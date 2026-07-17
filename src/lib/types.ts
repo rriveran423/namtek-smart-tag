@@ -24,7 +24,15 @@ export type TravelTag = {
   route_destination: string | null;
   route_stops: string[];
   trip_type: "vacation" | "business" | "emergency" | "other";
+  flight_number: string | null;
+  baggage_report_number: string | null;
+  tracker_type: "apple_find_my" | "google_find_hub" | "other" | null;
+  tracker_url: string | null;
+  recovery_packet_enabled: boolean;
+  recovery_share_code: string;
+  show_direct_contact: boolean;
   tag_scans?: TagScan[];
+  recovery_cases?: RecoveryCase[];
 };
 
 export type TagScan = {
@@ -33,4 +41,24 @@ export type TagScan = {
   longitude: number;
   accuracy_m: number | null;
   created_at: string;
+};
+
+export type RecoveryMessage = {
+  id: number;
+  sender_role: "finder" | "owner";
+  body: string;
+  created_at: string;
+};
+
+export type RecoveryCase = {
+  id: string;
+  finder_name: string | null;
+  finder_contact: string | null;
+  handoff_type: "still_with_me" | "airline" | "airport_lost_found" | "hotel" | "police" | "other";
+  handoff_location: string | null;
+  finder_note: string | null;
+  status: "open" | "contacted" | "pickup_arranged" | "recovered" | "closed";
+  created_at: string;
+  updated_at: string;
+  recovery_messages?: RecoveryMessage[];
 };
