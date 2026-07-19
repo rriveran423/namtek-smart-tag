@@ -25,6 +25,7 @@ export type TravelTag = {
   route_stops: string[];
   trip_type: "vacation" | "business" | "emergency" | "other";
   flight_number: string | null;
+  flight_date: string | null;
   baggage_report_number: string | null;
   tracker_type: "apple_find_my" | "google_find_hub" | "other" | null;
   tracker_url: string | null;
@@ -37,6 +38,37 @@ export type TravelTag = {
   notify_by_sms: boolean;
   tag_scans?: TagScan[];
   recovery_cases?: RecoveryCase[];
+  tag_trips?: TagTrip[];
+};
+
+export type TripEvent = {
+  id: number;
+  event_type: string;
+  title: string;
+  detail: string | null;
+  source: "customer" | "flight_provider" | "automation" | "finder";
+  event_at: string;
+};
+
+export type TagTrip = {
+  id: string;
+  tag_id: string;
+  airline: string;
+  flight_number: string;
+  flight_date: string;
+  origin: string;
+  destination: string;
+  status: "submitted" | "scheduled" | "delayed" | "in_flight" | "landed" | "collected" | "lost" | "archived_unconfirmed";
+  provider_status: string | null;
+  scheduled_departure: string | null;
+  actual_departure: string | null;
+  scheduled_arrival: string | null;
+  actual_arrival: string | null;
+  reminder_count: number;
+  completed_at: string | null;
+  archived_at: string | null;
+  created_at: string;
+  trip_events?: TripEvent[];
 };
 
 export type TagScan = {

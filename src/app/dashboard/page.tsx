@@ -2,8 +2,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   BriefcaseBusiness,
+  CheckCircle2,
+  Clock3,
   ExternalLink,
   Heart,
+  History,
   LocateFixed,
   Luggage,
   MapPinned,
@@ -21,7 +24,13 @@ import { RecoveryCenter } from "@/components/recovery-center";
 import { DashboardPanel } from "@/components/dashboard-panel";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
-import { renameTag, signOut, updateTag } from "./actions";
+import {
+  renameTag,
+  signOut,
+  startLuggageJourney,
+  updateJourneyStatus,
+  updateTag,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 const airlines = [
@@ -57,6 +66,7 @@ export default async function Dashboard({
     error?: string;
     tag?: string;
     renamed?: string;
+    journey?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -67,12 +77,15 @@ export default async function Dashboard({
   if (!user) redirect("/login");
   const { data } = await supabase
     .from("tags")
-    .select("*, tag_scans(*), recovery_cases(*, recovery_messages(*))")
+    .select("*, tag_scans(*), recovery_cases(*, recovery_messages(*)), tag_trips(*, trip_events(*))")
     .eq("owner_id", user.id)
     .order("created_at", { referencedTable: "tag_scans", ascending: false });
   const tags = (data ?? []) as TravelTag[];
   const tag = tags.find((item) => item.public_code === params.tag) ?? tags[0];
   const latest = tag?.tag_scans?.[0];
+  const trips = [...(tag?.tag_trips ?? [])].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const activeTrip = trips.find((trip) => !["collected", "archived_unconfirmed"].includes(trip.status));
+  const pastTrips = trips.filter((trip) => ["collected", "archived_unconfirmed"].includes(trip.status));
   const field =
     "mt-2 w-full rounded-2xl border border-[#d8dee8] bg-[#fbfcfe] px-4 py-3.5 text-[#111827] outline-none transition focus:border-[#2463eb] focus:bg-white focus:ring-4 focus:ring-[#2463eb]/10";
   return (
@@ -104,6 +117,12 @@ export default async function Dashboard({
               className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
             >
               Trip
+            </a>
+            <a
+              href="#journey"
+              className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
+            >
+              Journey
             </a>
             <a
               href="#recovery-tools"
@@ -173,6 +192,11 @@ export default async function Dashboard({
         {params.renamed && (
           <div className="mb-6 rounded-xl bg-[#d8ff62] p-4 font-bold">
             Luggage name updated.
+          </div>
+        )}
+        {params.journey && (
+          <div className="mb-6 rounded-xl bg-[#d8ff62] p-4 font-bold">
+            Luggage journey updated.
           </div>
         )}
         {params.error && (
@@ -268,6 +292,63 @@ export default async function Dashboard({
                   <Pencil size={15} /> Rename
                 </button>
               </form>
+            </section>
+            <section id="journey" className="mb-6 scroll-mt-28 rounded-[28px] border border-[#dfe4eb] bg-white p-6 shadow-sm sm:p-7">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e8eefc] text-[#2463eb]"><Plane size={21} /></span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2463eb]">Luggage journey</p>
+                    <h2 className="display mt-1 text-2xl font-extrabold">{activeTrip ? "Active flight tracking" : "Start a tracked trip"}</h2>
+                  </div>
+                </div>
+                {activeTrip && <span className="rounded-full bg-[#fff0e9] px-4 py-2 text-xs font-extrabold capitalize text-[#d94727]">{activeTrip.status.replaceAll("_", " ")}</span>}
+              </div>
+              {activeTrip ? (
+                <div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+                  <div className="rounded-2xl bg-[#f4f7fb] p-5">
+                    <p className="text-xl font-extrabold">{activeTrip.airline} {activeTrip.flight_number}</p>
+                    <p className="mt-1 text-sm text-black/50">{activeTrip.origin} → {activeTrip.destination}</p>
+                    <p className="mt-1 text-sm text-black/50">{new Date(`${activeTrip.flight_date}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
+                    {activeTrip.status === "in_flight" && <p className="mt-4 rounded-xl bg-amber-100 p-3 text-xs leading-5 text-amber-900">The flight has departed and the luggage is expected in transit. NamTek cannot independently verify that it was loaded.</p>}
+                    {activeTrip.status === "landed" && <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#eef4ff] p-3 text-xs leading-5 text-[#2454a6]"><Clock3 className="mt-0.5 shrink-0" size={15} /> Flight landed. Please confirm whether your luggage is back with you.</p>}
+                    <div className="mt-5 grid gap-2">
+                      <form action={updateJourneyStatus}>
+                        <input type="hidden" name="trip_id" value={activeTrip.id} /><input type="hidden" name="tag_code" value={tag.public_code} /><input type="hidden" name="journey_action" value="collected" />
+                        <button className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-3 text-sm font-bold text-white"><CheckCircle2 size={16} /> I have my luggage</button>
+                      </form>
+                      <form action={updateJourneyStatus}>
+                        <input type="hidden" name="trip_id" value={activeTrip.id} /><input type="hidden" name="tag_code" value={tag.public_code} /><input type="hidden" name="journey_action" value="lost" />
+                        <button className="w-full rounded-full border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">Report luggage missing</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="flex items-center gap-2 font-bold"><History size={17} /> Journey audit trail</h3>
+                    <div className="mt-4 max-h-72 space-y-0 overflow-y-auto pr-2">
+                      {[...(activeTrip.trip_events ?? [])].sort((a, b) => new Date(b.event_at).getTime() - new Date(a.event_at).getTime()).map((event) => (
+                        <div key={event.id} className="relative border-l-2 border-[#dce3ee] pb-5 pl-5 last:pb-0">
+                          <span className="absolute -left-[5px] top-1 h-2 w-2 rounded-full bg-[#2463eb]" />
+                          <p className="text-sm font-bold">{event.title}</p>
+                          {event.detail && <p className="mt-1 text-xs leading-5 text-black/45">{event.detail}</p>}
+                          <p className="mt-1 text-[11px] text-black/35">{new Date(event.event_at).toLocaleString()} · {event.source.replaceAll("_", " ")}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-6 rounded-2xl bg-[#f4f7fb] p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
+                  <div><p className="font-bold">Ready to check your luggage?</p><p className="mt-1 text-sm leading-6 text-black/45">First save the airline, flight number, travel date, origin and destination below. Then confirm when you hand the bag to the airline.</p></div>
+                  <form action={startLuggageJourney} className="mt-4 shrink-0 sm:mt-0"><input type="hidden" name="tag_id" value={tag.id} /><button className="rounded-full bg-[#0f1726] px-5 py-3 text-sm font-bold text-white">Luggage submitted to airline</button></form>
+                </div>
+              )}
+              {pastTrips.length > 0 && (
+                <details className="mt-5 rounded-2xl border border-[#dfe4eb] p-4">
+                  <summary className="cursor-pointer font-bold">Travel history ({pastTrips.length})</summary>
+                  <div className="mt-4 space-y-3">{pastTrips.map((trip) => <div key={trip.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f7f8fa] p-4"><div><p className="font-bold">{trip.airline} {trip.flight_number}</p><p className="text-xs text-black/45">{trip.flight_date} · {trip.origin} → {trip.destination}</p></div><div className="flex items-center gap-2"><span className="text-xs font-bold capitalize text-black/45">{trip.status.replaceAll("_", " ")}</span>{trip.status === "archived_unconfirmed" && <form action={updateJourneyStatus}><input type="hidden" name="trip_id" value={trip.id} /><input type="hidden" name="tag_code" value={tag.public_code} /><input type="hidden" name="journey_action" value="restore" /><button className="rounded-full border border-[#dfe4eb] bg-white px-3 py-2 text-xs font-bold">Restore</button></form>}</div></div>)}</div>
+                </details>
+              )}
             </section>
             <div className="grid items-start gap-6 xl:grid-cols-[1.45fr_.55fr]">
               <form action={updateTag} className="space-y-4">
@@ -440,6 +521,10 @@ export default async function Dashboard({
                         className={field}
                         placeholder="DL 1923"
                       />
+                    </label>
+                    <label className="text-sm font-bold">
+                      Travel date
+                      <input type="date" name="flight_date" defaultValue={tag.flight_date ?? ""} className={field} />
                     </label>
                     <label className="text-sm font-bold">
                       Airline baggage report / PIR

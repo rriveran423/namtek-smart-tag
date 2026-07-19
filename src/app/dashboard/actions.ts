@@ -77,6 +77,7 @@ export async function updateTag(formData: FormData) {
       .filter(Boolean),
     trip_type: String(formData.get("trip_type")),
     flight_number: String(formData.get("flight_number")),
+    flight_date: String(formData.get("flight_date")) || null,
     baggage_report_number: String(formData.get("baggage_report_number")),
     tracker_type: String(formData.get("tracker_type")) || null,
     tracker_url: trackerUrl || null,
@@ -103,6 +104,88 @@ export async function updateTag(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath(`/t/${data.public_code}`);
   redirect("/dashboard?saved=1");
+}
+
+export async function startLuggageJourney(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const tagId = String(formData.get("tag_id"));
+  const { data: tag, error: tagError } = await supabase
+    .from("tags")
+    .select("id, public_code, airline, flight_number, flight_date, route_origin, route_destination")
+    .eq("id", tagId)
+    .eq("owner_id", user.id)
+    .single();
+  if (tagError || !tag) redirect("/dashboard?error=Unable%20to%20find%20that%20tag");
+  if (!tag.airline || !tag.flight_number || !tag.flight_date || !tag.route_origin || !tag.route_destination) {
+    redirect(`/dashboard?tag=${encodeURIComponent(tag.public_code)}&error=${encodeURIComponent("Save the airline, flight number, travel date, origin, and destination before submitting luggage.")}`);
+  }
+  const { data: trip, error } = await supabase
+    .from("tag_trips")
+    .insert({
+      tag_id: tag.id,
+      owner_id: user.id,
+      airline: tag.airline,
+      flight_number: tag.flight_number,
+      flight_date: tag.flight_date,
+      origin: tag.route_origin,
+      destination: tag.route_destination,
+      status: "submitted",
+    })
+    .select("id")
+    .single();
+  if (error) redirect(`/dashboard?tag=${encodeURIComponent(tag.public_code)}&error=${encodeURIComponent(error.message.includes("one_open_trip_per_tag") ? "This luggage already has an active journey." : error.message)}`);
+  await supabase.from("trip_events").insert({
+    trip_id: trip.id,
+    event_type: "submitted",
+    title: "Luggage submitted to airline",
+    detail: `${tag.airline} ${tag.flight_number} · ${tag.route_origin} to ${tag.route_destination}`,
+    source: "customer",
+  });
+  revalidatePath("/dashboard");
+  redirect(`/dashboard?tag=${encodeURIComponent(tag.public_code)}&journey=started`);
+}
+
+export async function updateJourneyStatus(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const tripId = String(formData.get("trip_id"));
+  const tagCode = String(formData.get("tag_code"));
+  const action = String(formData.get("journey_action"));
+  const allowed = ["collected", "lost", "restore"];
+  if (!allowed.includes(action)) redirect("/dashboard?error=Invalid%20journey%20action");
+  const { data: trip } = await supabase
+    .from("tag_trips")
+    .select("id, status")
+    .eq("id", tripId)
+    .eq("owner_id", user.id)
+    .single();
+  if (!trip) redirect("/dashboard?error=Journey%20not%20found");
+
+  const status = action === "restore" ? "landed" : action;
+  const values = action === "collected"
+    ? { status, completed_at: new Date().toISOString(), next_reminder_at: null, updated_at: new Date().toISOString() }
+    : action === "restore"
+      ? { status, archived_at: null, completed_at: null, next_reminder_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(), updated_at: new Date().toISOString() }
+      : { status, next_reminder_at: null, updated_at: new Date().toISOString() };
+  const { error } = await supabase.from("tag_trips").update(values).eq("id", tripId).eq("owner_id", user.id);
+  if (error) redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&error=${encodeURIComponent(error.message)}`);
+  await supabase.from("trip_events").insert({
+    trip_id: tripId,
+    event_type: action,
+    title: action === "collected" ? "Luggage collected and confirmed" : action === "lost" ? "Luggage marked as lost" : "Journey restored for review",
+    detail: action === "collected" ? "The owner confirmed that the luggage is back in their possession." : null,
+    source: "customer",
+  });
+  if (action === "lost") await supabase.from("tags").update({ status: "lost" }).eq("public_code", tagCode).eq("owner_id", user.id);
+  revalidatePath("/dashboard");
+  redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&journey=${encodeURIComponent(action)}`);
 }
 
 export async function sendOwnerMessage(formData: FormData) {
