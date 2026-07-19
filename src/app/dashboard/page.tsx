@@ -23,6 +23,7 @@ import { AirlineSearch } from "@/components/airline-search";
 import { ImageUpload } from "@/components/image-upload";
 import { RecoveryCenter } from "@/components/recovery-center";
 import { DashboardPanel } from "@/components/dashboard-panel";
+import { JourneyLiveRefresh } from "@/components/journey-live-refresh";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
 import {
@@ -63,7 +64,7 @@ export default async function Dashboard({
   const latest = tag?.tag_scans?.[0];
   const trips = [...(tag?.tag_trips ?? [])].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const activeTrip = trips.find((trip) => !["collected", "archived_unconfirmed"].includes(trip.status));
-  const pastTrips = trips.filter((trip) => ["collected", "archived_unconfirmed"].includes(trip.status));
+  const hasFlightInfo = Boolean(tag?.airline && tag.flight_number && tag.flight_date && tag.route_origin && tag.route_destination);
   const field =
     "mt-2 w-full rounded-2xl border border-[#d8dee8] bg-[#fbfcfe] px-4 py-3.5 text-[#111827] outline-none transition focus:border-[#2463eb] focus:bg-white focus:ring-4 focus:ring-[#2463eb]/10";
   return (
@@ -96,12 +97,8 @@ export default async function Dashboard({
             >
               Trip
             </a>
-            <a
-              href="#journey"
-              className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
-            >
-              Journey
-            </a>
+            {(hasFlightInfo || activeTrip) && <a href="#journey" className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]">Journey</a>}
+            <Link href="/dashboard/history" className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]">History</Link>
             <a
               href="#recovery-tools"
               className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
@@ -271,7 +268,8 @@ export default async function Dashboard({
                 </button>
               </form>
             </section>
-            <section id="journey" className="mb-6 scroll-mt-28 rounded-[28px] border border-[#dfe4eb] bg-white p-6 shadow-sm sm:p-7">
+            {(hasFlightInfo || activeTrip) && <section id="journey" className="mb-6 scroll-mt-28 rounded-[28px] border border-[#dfe4eb] bg-white p-6 shadow-sm sm:p-7">
+              {activeTrip && <JourneyLiveRefresh tripId={activeTrip.id} />}
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e8eefc] text-[#2463eb]"><Plane size={21} /></span>
@@ -321,13 +319,8 @@ export default async function Dashboard({
                   <form action={startLuggageJourney} className="mt-4 shrink-0 sm:mt-0"><input type="hidden" name="tag_id" value={tag.id} /><button className="rounded-full bg-[#0f1726] px-5 py-3 text-sm font-bold text-white">Luggage submitted to airline</button></form>
                 </div>
               )}
-              {pastTrips.length > 0 && (
-                <details className="mt-5 rounded-2xl border border-[#dfe4eb] p-4">
-                  <summary className="cursor-pointer font-bold">Travel history ({pastTrips.length})</summary>
-                  <div className="mt-4 space-y-3">{pastTrips.map((trip) => <div key={trip.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f7f8fa] p-4"><div><p className="font-bold">{trip.airline} {trip.flight_number}</p><p className="text-xs text-black/45">{trip.flight_date} · {trip.origin} → {trip.destination}</p></div><div className="flex items-center gap-2"><span className="text-xs font-bold capitalize text-black/45">{trip.status.replaceAll("_", " ")}</span>{trip.status === "archived_unconfirmed" && <form action={updateJourneyStatus}><input type="hidden" name="trip_id" value={trip.id} /><input type="hidden" name="tag_code" value={tag.public_code} /><input type="hidden" name="journey_action" value="restore" /><button className="rounded-full border border-[#dfe4eb] bg-white px-3 py-2 text-xs font-bold">Restore</button></form>}</div></div>)}</div>
-                </details>
-              )}
-            </section>
+              <Link href="/dashboard/history" className="mt-5 flex items-center justify-center gap-2 rounded-full border border-[#dfe4eb] px-4 py-3 text-sm font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"><History size={16} /> Open complete journey history</Link>
+            </section>}
             <div className="grid items-start gap-6 xl:grid-cols-[1.45fr_.55fr]">
               <form action={updateTag} className="space-y-4">
                 <input type="hidden" name="id" value={tag.id} />

@@ -183,9 +183,26 @@ export async function updateJourneyStatus(formData: FormData) {
     detail: action === "collected" ? "The owner confirmed that the luggage is back in their possession." : null,
     source: "customer",
   });
+  if (action === "collected") {
+    await supabase
+      .from("tags")
+      .update({
+        airline: null,
+        flight_number: null,
+        flight_date: null,
+        route_origin: null,
+        route_destination: null,
+        route_stops: [],
+        baggage_report_number: null,
+        status: "active",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("public_code", tagCode)
+      .eq("owner_id", user.id);
+  }
   if (action === "lost") await supabase.from("tags").update({ status: "lost" }).eq("public_code", tagCode).eq("owner_id", user.id);
   revalidatePath("/dashboard");
-  redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&journey=${encodeURIComponent(action)}`);
+  redirect(action === "collected" ? `/dashboard/history?completed=1` : `/dashboard?tag=${encodeURIComponent(tagCode)}&journey=${encodeURIComponent(action)}`);
 }
 
 export async function sendOwnerMessage(formData: FormData) {
