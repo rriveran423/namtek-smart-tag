@@ -153,6 +153,51 @@ export async function startLuggageJourney(formData: FormData) {
   redirect(`/dashboard?tag=${encodeURIComponent(tag.public_code)}&journey=started`);
 }
 
+export async function clearLuggageJourney(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const tripId = String(formData.get("trip_id"));
+  const tagCode = String(formData.get("tag_code"));
+  const { data: trip, error: tripError } = await supabase
+    .from("tag_trips")
+    .select("id, tag_id, status")
+    .eq("id", tripId)
+    .eq("owner_id", user.id)
+    .single();
+  if (tripError || !trip) redirect("/dashboard?error=Journey%20not%20found");
+  if (["collected", "archived_unconfirmed"].includes(trip.status)) {
+    redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&error=${encodeURIComponent("Completed journeys cannot be cleared from the dashboard.")}`);
+  }
+
+  const { error: deleteError } = await supabase.from("tag_trips").delete().eq("id", trip.id).eq("owner_id", user.id);
+  if (deleteError) redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&error=${encodeURIComponent(deleteError.message)}`);
+
+  const { error: tagError } = await supabase
+    .from("tags")
+    .update({
+      airline: null,
+      flight_number: null,
+      flight_date: null,
+      route_origin: null,
+      route_destination: null,
+      route_stops: [],
+      baggage_report_number: null,
+      airline_bag_tag_number: null,
+      checked_bag_count: 1,
+      status: "active",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", trip.tag_id)
+    .eq("owner_id", user.id);
+  if (tagError) redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&error=${encodeURIComponent(tagError.message)}`);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/history");
+  redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&journey=cleared`);
+}
+
 export async function updateJourneyStatus(formData: FormData) {
   const supabase = await createClient();
   const {

@@ -15,6 +15,7 @@ import {
   Plus,
   Save,
   Siren,
+  Trash2,
 } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { AirportSearch, AirportStops } from "@/components/airport-search";
@@ -27,6 +28,7 @@ import { BaggagePickupAssistant } from "@/components/baggage-pickup-assistant";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
 import {
+  clearLuggageJourney,
   renameTag,
   signOut,
   startLuggageJourney,
@@ -170,7 +172,7 @@ export default async function Dashboard({
         )}
         {params.journey && (
           <div className="mb-6 rounded-xl bg-[#d8ff62] p-4 font-bold">
-            Luggage journey updated.
+            {params.journey === "cleared" ? "Journey cleared. You can now enter and track a different flight." : "Luggage journey updated."}
           </div>
         )}
         {params.error && (
@@ -304,6 +306,17 @@ export default async function Dashboard({
                   </div>
                 </div>
                 <BaggagePickupAssistant trip={activeTrip} tag={tag} />
+                <details className="mt-5 rounded-2xl border border-red-100 bg-red-50/50">
+                  <summary className="cursor-pointer list-none px-5 py-4 text-sm font-bold text-red-700">Need to track a different flight?</summary>
+                  <div className="border-t border-red-100 px-5 py-4">
+                    <p className="text-xs leading-5 text-red-700/75">Clearing permanently removes this active journey and its audit trail, then empties the current flight information. Your luggage tag and profile will not be removed.</p>
+                    <form action={clearLuggageJourney} className="mt-4">
+                      <input type="hidden" name="trip_id" value={activeTrip.id} />
+                      <input type="hidden" name="tag_code" value={tag.public_code} />
+                      <button className="flex items-center gap-2 rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100"><Trash2 size={15} /> Clear current journey</button>
+                    </form>
+                  </div>
+                </details>
                 </>
               ) : (
                 <div className="mt-6 rounded-2xl bg-[#f4f7fb] p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
