@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { AirportSearch, AirportStops } from "@/components/airport-search";
+import { AirlineSearch } from "@/components/airline-search";
 import { ImageUpload } from "@/components/image-upload";
 import { RecoveryCenter } from "@/components/recovery-center";
 import { DashboardPanel } from "@/components/dashboard-panel";
@@ -33,29 +34,6 @@ import {
 } from "./actions";
 
 export const dynamic = "force-dynamic";
-const airlines = [
-  "",
-  "Aeroméxico",
-  "Air Canada",
-  "Air France",
-  "Alaska Airlines",
-  "American Airlines",
-  "British Airways",
-  "Delta Air Lines",
-  "Emirates",
-  "Frontier Airlines",
-  "Iberia",
-  "JetBlue",
-  "KLM",
-  "Lufthansa",
-  "Qatar Airways",
-  "Southwest Airlines",
-  "Spirit Airlines",
-  "Turkish Airlines",
-  "United Airlines",
-  "Virgin Atlantic",
-  "Other",
-];
 
 export default async function Dashboard({
   searchParams,
@@ -486,20 +464,7 @@ export default async function Dashboard({
                         <option value="other">Other</option>
                       </select>
                     </label>
-                    <label className="text-sm font-bold">
-                      Airline
-                      <select
-                        name="airline"
-                        defaultValue={tag.airline ?? ""}
-                        className={field}
-                      >
-                        {airlines.map((airline) => (
-                          <option key={airline} value={airline}>
-                            {airline || "Select airline (optional)"}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <AirlineSearch defaultValue={tag.airline ?? ""} />
                     <AirportSearch
                       name="route_origin"
                       label="From"
