@@ -9,6 +9,7 @@ import {
   MapPinned,
   PackageCheck,
   Plane,
+  Plus,
   Save,
   Siren,
 } from "lucide-react";
@@ -182,6 +183,12 @@ export default async function Dashboard({
               Scan the private registration QR included inside your NamTek
               package.
             </p>
+            <Link
+              href="/dashboard/add-tag"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#0f1726] px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#18243a]"
+            >
+              <Plus size={17} /> Add your first tag
+            </Link>
           </section>
         ) : (
           <>
@@ -206,6 +213,15 @@ export default async function Dashboard({
                   </p>
                 </Link>
               ))}
+              <Link
+                href="/dashboard/add-tag"
+                className="flex min-w-[210px] items-center justify-center gap-3 rounded-2xl border border-dashed border-[#aeb8c7] bg-white/45 p-4 text-sm font-bold text-[#334155] transition hover:-translate-y-0.5 hover:border-[#2463eb] hover:bg-white hover:text-[#2463eb] hover:shadow-md"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8eefc] text-[#2463eb]">
+                  <Plus size={18} />
+                </span>
+                Add another tag
+              </Link>
             </div>
             <div className="grid items-start gap-6 xl:grid-cols-[1.45fr_.55fr]">
               <form action={updateTag} className="space-y-4">
