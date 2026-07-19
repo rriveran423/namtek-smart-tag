@@ -32,7 +32,10 @@ export function RecoveryCenter({
   const cases = tag.recovery_cases ?? [];
   const packetUrl = `${origin}/recovery/${tag.recovery_share_code}`;
   return (
-    <section className="rounded-3xl bg-white p-6">
+    <section
+      id="recovery-center"
+      className="scroll-mt-28 rounded-3xl bg-white p-6"
+    >
       <div className="flex items-center gap-3">
         <span className="rounded-2xl bg-[#fff1ed] p-3 text-[#ff5a36]">
           <ShieldCheck />
@@ -44,7 +47,9 @@ export function RecoveryCenter({
           </p>
         </div>
       </div>
-      <div className="mt-5"><LiveRecoveryUpdates /></div>
+      <div className="mt-5">
+        <LiveRecoveryUpdates />
+      </div>
       {tag.recovery_packet_enabled && (
         <div className="mt-5 rounded-2xl bg-[#eef4ff] p-4">
           <p className="text-xs font-bold uppercase tracking-wider text-[#2454a6]">

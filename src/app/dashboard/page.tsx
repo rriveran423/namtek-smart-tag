@@ -16,6 +16,7 @@ import { Brand } from "@/components/brand";
 import { AirportSearch, AirportStops } from "@/components/airport-search";
 import { ImageUpload } from "@/components/image-upload";
 import { RecoveryCenter } from "@/components/recovery-center";
+import { DashboardPanel } from "@/components/dashboard-panel";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
 import { signOut, updateTag } from "./actions";
@@ -84,6 +85,48 @@ export default async function Dashboard({
           </form>
         </div>
       </nav>
+      {tag && (
+        <nav className="sticky top-0 z-40 border-b border-black/10 bg-[#eeebe2]/95 px-6 py-3 backdrop-blur">
+          <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto pb-1">
+            <a
+              href="#luggage"
+              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+            >
+              Luggage
+            </a>
+            <a
+              href="#trip"
+              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+            >
+              Trip
+            </a>
+            <a
+              href="#recovery-tools"
+              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+            >
+              Recovery tools
+            </a>
+            <a
+              href="#finder-preferences"
+              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+            >
+              Finder page
+            </a>
+            <a
+              href="#recovery-center"
+              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+            >
+              Messages
+            </a>
+            <a
+              href="#locations"
+              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+            >
+              Locations
+            </a>
+          </div>
+        </nav>
+      )}
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
@@ -152,25 +195,15 @@ export default async function Dashboard({
               ))}
             </div>
             <div className="grid gap-6 xl:grid-cols-[1.4fr_.6fr]">
-              <form
-                action={updateTag}
-                className="space-y-8 rounded-3xl bg-white p-6 sm:p-8"
-              >
+              <form action={updateTag} className="space-y-4">
                 <input type="hidden" name="id" value={tag.id} />
-                <section>
-                  <div className="mb-6 flex items-center gap-3">
-                    <div className="rounded-2xl bg-[#fff1ed] p-3">
-                      <Luggage className="text-[#ff5a36]" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold">
-                        Tag {tag.public_code}
-                      </h2>
-                      <p className="text-sm text-black/45">
-                        Luggage and traveler identity
-                      </p>
-                    </div>
-                  </div>
+                <DashboardPanel
+                  id="luggage"
+                  title={`Tag ${tag.public_code}`}
+                  subtitle="Luggage and traveler identity"
+                  icon={<Luggage size={21} />}
+                  defaultOpen
+                >
                   <div className="grid gap-6 md:grid-cols-2">
                     <ImageUpload
                       tagId={tag.id}
@@ -276,12 +309,13 @@ export default async function Dashboard({
                       />
                     </label>
                   </div>
-                </section>
-                <section className="border-t border-black/10 pt-8">
-                  <div className="mb-5 flex items-center gap-3">
-                    <Plane className="text-[#2463eb]" />
-                    <h2 className="text-xl font-bold">Current trip</h2>
-                  </div>
+                </DashboardPanel>
+                <DashboardPanel
+                  id="trip"
+                  title="Current trip"
+                  subtitle="Airline, route, connections, and baggage claim"
+                  icon={<Plane size={21} />}
+                >
                   <div className="grid gap-5 sm:grid-cols-2">
                     <label className="text-sm font-bold">
                       Trip purpose
@@ -342,13 +376,13 @@ export default async function Dashboard({
                       />
                     </label>
                   </div>
-                </section>
-                <section className="border-t border-black/10 pt-8">
-                  <h2 className="text-xl font-bold">Recovery tools</h2>
-                  <p className="mt-1 text-sm text-black/45">
-                    Optional details for the secure airline packet. Tracker
-                    links are never shown on the ordinary finder page.
-                  </p>
+                </DashboardPanel>
+                <DashboardPanel
+                  id="recovery-tools"
+                  title="Recovery tools"
+                  subtitle="Secure airline packet, tracker link, and alerts"
+                  icon={<MapPinned size={21} />}
+                >
                   <div className="mt-5 grid gap-5 sm:grid-cols-2">
                     <label className="text-sm font-bold">
                       Tracker service
@@ -439,11 +473,13 @@ export default async function Dashboard({
                       </div>
                     </div>
                   </div>
-                </section>
-                <section className="border-t border-black/10 pt-8">
-                  <h2 className="mb-5 text-xl font-bold">
-                    Finder message & preferences
-                  </h2>
+                </DashboardPanel>
+                <DashboardPanel
+                  id="finder-preferences"
+                  title="Finder page"
+                  subtitle="Public message, language, and privacy preferences"
+                  icon={<ExternalLink size={21} />}
+                >
                   <div className="grid gap-5 sm:grid-cols-2">
                     <p className="rounded-2xl bg-[#eef4ff] p-4 text-sm font-bold text-[#2454a6] sm:col-span-2">
                       Your phone number and email address are never shown to
@@ -478,7 +514,7 @@ export default async function Dashboard({
                       />
                     </label>
                   </div>
-                </section>
+                </DashboardPanel>
                 <button className="flex w-full items-center justify-center gap-2 rounded-full bg-[#ff5a36] px-5 py-4 font-bold text-white">
                   <Save size={18} /> Save travel profile
                 </button>
@@ -491,7 +527,10 @@ export default async function Dashboard({
                     "https://namtek-smart-tag.vercel.app"
                   }
                 />
-                <section className="rounded-3xl bg-[#171713] p-6 text-white">
+                <section
+                  id="locations"
+                  className="scroll-mt-28 rounded-3xl bg-[#171713] p-6 text-white"
+                >
                   <div className="flex items-center gap-3">
                     <MapPinned className="text-[#d8ff62]" />
                     <h2 className="text-xl font-bold">Last known scan</h2>
