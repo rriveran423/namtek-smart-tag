@@ -5,6 +5,40 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { sendMessageNotifications } from "@/lib/notifications";
 
+export async function renameTag(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const id = String(formData.get("id") ?? "");
+  const publicCode = String(formData.get("public_code") ?? "");
+  const nickname = String(formData.get("nickname") ?? "").trim();
+  if (!nickname || nickname.length > 60) {
+    redirect(
+      `/dashboard?tag=${encodeURIComponent(publicCode)}&error=${encodeURIComponent("Luggage name must be between 1 and 60 characters.")}`,
+    );
+  }
+
+  const { error } = await supabase
+    .from("tags")
+    .update({ nickname, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("owner_id", user.id);
+  if (error) {
+    redirect(
+      `/dashboard?tag=${encodeURIComponent(publicCode)}&error=${encodeURIComponent(error.message)}`,
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/t/${publicCode}`);
+  redirect(
+    `/dashboard?tag=${encodeURIComponent(publicCode)}&renamed=1`,
+  );
+}
+
 export async function updateTag(formData: FormData) {
   const supabase = await createClient();
   const {

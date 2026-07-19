@@ -8,6 +8,7 @@ import {
   Luggage,
   MapPinned,
   PackageCheck,
+  Pencil,
   Plane,
   Plus,
   Save,
@@ -20,7 +21,7 @@ import { RecoveryCenter } from "@/components/recovery-center";
 import { DashboardPanel } from "@/components/dashboard-panel";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
-import { signOut, updateTag } from "./actions";
+import { renameTag, signOut, updateTag } from "./actions";
 
 export const dynamic = "force-dynamic";
 const airlines = [
@@ -55,6 +56,7 @@ export default async function Dashboard({
     claimed?: string;
     error?: string;
     tag?: string;
+    renamed?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -168,6 +170,11 @@ export default async function Dashboard({
             Tag {params.claimed} is now registered to your account.
           </div>
         )}
+        {params.renamed && (
+          <div className="mb-6 rounded-xl bg-[#d8ff62] p-4 font-bold">
+            Luggage name updated.
+          </div>
+        )}
         {params.error && (
           <div className="mb-6 rounded-xl bg-red-100 p-4 text-red-800">
             {params.error}
@@ -223,12 +230,51 @@ export default async function Dashboard({
                 Add another tag
               </Link>
             </div>
+            <section className="mb-6 flex flex-col gap-5 rounded-[24px] border border-[#dfe4eb] bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[.16em] text-[#2463eb]">
+                  Selected luggage
+                </p>
+                <h2 className="display mt-2 text-2xl font-extrabold">
+                  {tag.nickname || tag.luggage_type || "My luggage"}
+                </h2>
+                <p className="mt-1 text-xs text-black/40">
+                  Smart Tag {tag.public_code}
+                </p>
+              </div>
+              <form
+                action={renameTag}
+                className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row"
+              >
+                <input type="hidden" name="id" value={tag.id} />
+                <input
+                  type="hidden"
+                  name="public_code"
+                  value={tag.public_code}
+                />
+                <label className="sr-only" htmlFor="quick-luggage-name">
+                  Luggage name
+                </label>
+                <input
+                  id="quick-luggage-name"
+                  name="nickname"
+                  required
+                  maxLength={60}
+                  defaultValue={tag.nickname ?? ""}
+                  placeholder="For example: Blue Away suitcase"
+                  className="min-w-0 flex-1 rounded-full border border-[#d8dee8] bg-[#fbfcfe] px-4 py-3 text-sm outline-none transition focus:border-[#2463eb] focus:bg-white focus:ring-4 focus:ring-[#2463eb]/10"
+                />
+                <button className="flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#0f1726] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#18243a]">
+                  <Pencil size={15} /> Rename
+                </button>
+              </form>
+            </section>
             <div className="grid items-start gap-6 xl:grid-cols-[1.45fr_.55fr]">
               <form action={updateTag} className="space-y-4">
                 <input type="hidden" name="id" value={tag.id} />
                 <DashboardPanel
                   id="luggage"
-                  title={`Tag ${tag.public_code}`}
+                  title={tag.nickname || tag.luggage_type || "My luggage"}
                   subtitle="Luggage and traveler identity"
                   icon={<Luggage size={21} />}
                   defaultOpen
@@ -266,7 +312,7 @@ export default async function Dashboard({
                   </div>
                   <div className="mt-6 grid gap-5 sm:grid-cols-2">
                     <label className="text-sm font-bold">
-                      Tag nickname
+                      Luggage name
                       <input
                         name="nickname"
                         defaultValue={tag.nickname ?? ""}
