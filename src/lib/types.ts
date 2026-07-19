@@ -27,6 +27,8 @@ export type TravelTag = {
   flight_number: string | null;
   flight_date: string | null;
   baggage_report_number: string | null;
+  airline_bag_tag_number: string | null;
+  checked_bag_count: number;
   tracker_type: "apple_find_my" | "google_find_hub" | "other" | null;
   tracker_url: string | null;
   recovery_packet_enabled: boolean;
@@ -64,6 +66,12 @@ export type TagTrip = {
   actual_departure: string | null;
   scheduled_arrival: string | null;
   actual_arrival: string | null;
+  arrival_terminal: string | null;
+  arrival_gate: string | null;
+  baggage_claim: string | null;
+  airline_bag_tag_number: string | null;
+  checked_bag_count: number;
+  issue_type: "missing" | "damaged" | null;
   reminder_count: number;
   completed_at: string | null;
   archived_at: string | null;

@@ -17,6 +17,12 @@ type HistoricalTrip = {
   provider_status: string | null;
   actual_departure: string | null;
   actual_arrival: string | null;
+  arrival_terminal: string | null;
+  arrival_gate: string | null;
+  baggage_claim: string | null;
+  airline_bag_tag_number: string | null;
+  checked_bag_count: number;
+  issue_type: "missing" | "damaged" | null;
   completed_at: string | null;
   archived_at: string | null;
   tags: { public_code: string; nickname: string | null; luggage_type: string | null };
@@ -71,6 +77,10 @@ export default async function JourneyHistory({ searchParams }: { searchParams: P
                         <p className="text-sm text-black/50">Provider status: <strong className="capitalize text-black/75">{trip.provider_status || "Not recorded"}</strong></p>
                         <p className="text-sm text-black/50">Departure: <strong className="text-black/75">{trip.actual_departure ? new Date(trip.actual_departure).toLocaleString() : "Not recorded"}</strong></p>
                         <p className="text-sm text-black/50">Arrival: <strong className="text-black/75">{trip.actual_arrival ? new Date(trip.actual_arrival).toLocaleString() : "Not recorded"}</strong></p>
+                        <p className="text-sm text-black/50">Terminal / gate: <strong className="text-black/75">{trip.arrival_terminal || "—"} / {trip.arrival_gate || "—"}</strong></p>
+                        <p className="text-sm text-black/50">Baggage claim: <strong className="text-black/75">{trip.baggage_claim || "Not provided"}</strong></p>
+                        <p className="text-sm text-black/50">Bag tag / count: <strong className="text-black/75">{trip.airline_bag_tag_number || "Not entered"} / {trip.checked_bag_count || 1}</strong></p>
+                        {trip.issue_type && <p className="rounded-xl bg-red-50 p-3 text-sm font-bold capitalize text-red-700">Reported issue: {trip.issue_type}</p>}
                         {trip.status === "archived_unconfirmed" && <form action={updateJourneyStatus} className="pt-3"><input type="hidden" name="trip_id" value={trip.id} /><input type="hidden" name="tag_code" value={trip.tags.public_code} /><input type="hidden" name="journey_action" value="restore" /><button className="flex w-full items-center justify-center gap-2 rounded-full border border-[#dfe4eb] px-4 py-3 text-sm font-bold"><RotateCcw size={15} /> Restore journey</button></form>}
                       </aside>
                       <section><h3 className="flex items-center gap-2 font-bold"><Clock3 size={17} /> Timestamped audit trail</h3><div className="mt-5">{events.map((event, index) => <div key={event.id} className="relative border-l-2 border-[#dce3ee] pb-6 pl-6 last:pb-0"><span className={`absolute -left-[6px] top-1 h-2.5 w-2.5 rounded-full ${index === events.length - 1 ? "bg-[#ff5a36]" : "bg-[#2463eb]"}`} /><p className="text-sm font-bold">{event.title}</p>{event.detail && <p className="mt-1 text-xs leading-5 text-black/45">{event.detail}</p>}<p className="mt-2 text-[11px] font-medium uppercase tracking-[.08em] text-black/35">{new Date(event.event_at).toLocaleString()} · {event.source.replaceAll("_", " ")}</p></div>)}</div></section>

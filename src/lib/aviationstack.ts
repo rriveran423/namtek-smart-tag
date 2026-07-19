@@ -3,7 +3,7 @@ type AviationFlight = {
   flight?: { iata?: string; icao?: string };
   airline?: { name?: string; iata?: string };
   departure?: { airport?: string; iata?: string; scheduled?: string; actual?: string };
-  arrival?: { airport?: string; iata?: string; scheduled?: string; actual?: string };
+  arrival?: { airport?: string; iata?: string; scheduled?: string; actual?: string; terminal?: string; gate?: string; baggage?: string };
 };
 
 const airportCode = (value: string) => {
@@ -41,6 +41,9 @@ export async function getFlightStatus(input: {
     actualDeparture: flight.departure?.actual ?? null,
     scheduledArrival: flight.arrival?.scheduled ?? null,
     actualArrival: flight.arrival?.actual ?? null,
+    arrivalTerminal: flight.arrival?.terminal ?? null,
+    arrivalGate: flight.arrival?.gate ?? null,
+    baggageClaim: flight.arrival?.baggage ?? null,
   };
 }
 

@@ -79,6 +79,8 @@ export async function updateTag(formData: FormData) {
     flight_number: String(formData.get("flight_number")),
     flight_date: String(formData.get("flight_date")) || null,
     baggage_report_number: String(formData.get("baggage_report_number")),
+    airline_bag_tag_number: String(formData.get("airline_bag_tag_number")),
+    checked_bag_count: Math.max(1, Math.min(20, Number(formData.get("checked_bag_count")) || 1)),
     tracker_type: String(formData.get("tracker_type")) || null,
     tracker_url: trackerUrl || null,
     recovery_packet_enabled: formData.get("recovery_packet_enabled") === "on",
@@ -115,7 +117,7 @@ export async function startLuggageJourney(formData: FormData) {
   const tagId = String(formData.get("tag_id"));
   const { data: tag, error: tagError } = await supabase
     .from("tags")
-    .select("id, public_code, airline, flight_number, flight_date, route_origin, route_destination")
+    .select("id, public_code, airline, flight_number, flight_date, route_origin, route_destination, airline_bag_tag_number, checked_bag_count")
     .eq("id", tagId)
     .eq("owner_id", user.id)
     .single();
@@ -133,6 +135,8 @@ export async function startLuggageJourney(formData: FormData) {
       flight_date: tag.flight_date,
       origin: tag.route_origin,
       destination: tag.route_destination,
+      airline_bag_tag_number: tag.airline_bag_tag_number || null,
+      checked_bag_count: tag.checked_bag_count || 1,
       status: "submitted",
     })
     .select("id")
@@ -158,7 +162,7 @@ export async function updateJourneyStatus(formData: FormData) {
   const tripId = String(formData.get("trip_id"));
   const tagCode = String(formData.get("tag_code"));
   const action = String(formData.get("journey_action"));
-  const allowed = ["collected", "lost", "restore"];
+  const allowed = ["collected", "lost", "damaged", "restore"];
   if (!allowed.includes(action)) redirect("/dashboard?error=Invalid%20journey%20action");
   const { data: trip } = await supabase
     .from("tag_trips")
@@ -168,18 +172,18 @@ export async function updateJourneyStatus(formData: FormData) {
     .single();
   if (!trip) redirect("/dashboard?error=Journey%20not%20found");
 
-  const status = action === "restore" ? "landed" : action;
+  const status = action === "restore" ? "landed" : action === "damaged" ? "lost" : action;
   const values = action === "collected"
     ? { status, completed_at: new Date().toISOString(), next_reminder_at: null, updated_at: new Date().toISOString() }
     : action === "restore"
-      ? { status, archived_at: null, completed_at: null, next_reminder_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(), updated_at: new Date().toISOString() }
-      : { status, next_reminder_at: null, updated_at: new Date().toISOString() };
+      ? { status, issue_type: null, archived_at: null, completed_at: null, next_reminder_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(), updated_at: new Date().toISOString() }
+      : { status, issue_type: action === "damaged" ? "damaged" : action === "lost" ? "missing" : null, next_reminder_at: null, updated_at: new Date().toISOString() };
   const { error } = await supabase.from("tag_trips").update(values).eq("id", tripId).eq("owner_id", user.id);
   if (error) redirect(`/dashboard?tag=${encodeURIComponent(tagCode)}&error=${encodeURIComponent(error.message)}`);
   await supabase.from("trip_events").insert({
     trip_id: tripId,
     event_type: action,
-    title: action === "collected" ? "Luggage collected and confirmed" : action === "lost" ? "Luggage marked as lost" : "Journey restored for review",
+    title: action === "collected" ? "Luggage collected and confirmed" : action === "lost" ? "Luggage reported missing" : action === "damaged" ? "Luggage reported damaged" : "Journey restored for review",
     detail: action === "collected" ? "The owner confirmed that the luggage is back in their possession." : null,
     source: "customer",
   });
@@ -194,13 +198,15 @@ export async function updateJourneyStatus(formData: FormData) {
         route_destination: null,
         route_stops: [],
         baggage_report_number: null,
+        airline_bag_tag_number: null,
+        checked_bag_count: 1,
         status: "active",
         updated_at: new Date().toISOString(),
       })
       .eq("public_code", tagCode)
       .eq("owner_id", user.id);
   }
-  if (action === "lost") await supabase.from("tags").update({ status: "lost" }).eq("public_code", tagCode).eq("owner_id", user.id);
+  if (action === "lost" || action === "damaged") await supabase.from("tags").update({ status: "lost" }).eq("public_code", tagCode).eq("owner_id", user.id);
   revalidatePath("/dashboard");
   redirect(action === "collected" ? `/dashboard/history?completed=1` : `/dashboard?tag=${encodeURIComponent(tagCode)}&journey=${encodeURIComponent(action)}`);
 }

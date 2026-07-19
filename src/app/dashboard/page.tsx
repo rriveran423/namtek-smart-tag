@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   BriefcaseBusiness,
-  CheckCircle2,
   Clock3,
   ExternalLink,
   Heart,
@@ -24,13 +23,13 @@ import { ImageUpload } from "@/components/image-upload";
 import { RecoveryCenter } from "@/components/recovery-center";
 import { DashboardPanel } from "@/components/dashboard-panel";
 import { JourneyLiveRefresh } from "@/components/journey-live-refresh";
+import { BaggagePickupAssistant } from "@/components/baggage-pickup-assistant";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
 import {
   renameTag,
   signOut,
   startLuggageJourney,
-  updateJourneyStatus,
   updateTag,
 } from "./actions";
 
@@ -281,6 +280,7 @@ export default async function Dashboard({
                 {activeTrip && <span className="rounded-full bg-[#fff0e9] px-4 py-2 text-xs font-extrabold capitalize text-[#d94727]">{activeTrip.status.replaceAll("_", " ")}</span>}
               </div>
               {activeTrip ? (
+                <>
                 <div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
                   <div className="rounded-2xl bg-[#f4f7fb] p-5">
                     <p className="text-xl font-extrabold">{activeTrip.airline} {activeTrip.flight_number}</p>
@@ -288,16 +288,6 @@ export default async function Dashboard({
                     <p className="mt-1 text-sm text-black/50">{new Date(`${activeTrip.flight_date}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
                     {activeTrip.status === "in_flight" && <p className="mt-4 rounded-xl bg-amber-100 p-3 text-xs leading-5 text-amber-900">The flight has departed and the luggage is expected in transit. NamTek cannot independently verify that it was loaded.</p>}
                     {activeTrip.status === "landed" && <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#eef4ff] p-3 text-xs leading-5 text-[#2454a6]"><Clock3 className="mt-0.5 shrink-0" size={15} /> Flight landed. Please confirm whether your luggage is back with you.</p>}
-                    <div className="mt-5 grid gap-2">
-                      <form action={updateJourneyStatus}>
-                        <input type="hidden" name="trip_id" value={activeTrip.id} /><input type="hidden" name="tag_code" value={tag.public_code} /><input type="hidden" name="journey_action" value="collected" />
-                        <button className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-3 text-sm font-bold text-white"><CheckCircle2 size={16} /> I have my luggage</button>
-                      </form>
-                      <form action={updateJourneyStatus}>
-                        <input type="hidden" name="trip_id" value={activeTrip.id} /><input type="hidden" name="tag_code" value={tag.public_code} /><input type="hidden" name="journey_action" value="lost" />
-                        <button className="w-full rounded-full border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">Report luggage missing</button>
-                      </form>
-                    </div>
                   </div>
                   <div>
                     <h3 className="flex items-center gap-2 font-bold"><History size={17} /> Journey audit trail</h3>
@@ -313,6 +303,8 @@ export default async function Dashboard({
                     </div>
                   </div>
                 </div>
+                <BaggagePickupAssistant trip={activeTrip} tag={tag} />
+                </>
               ) : (
                 <div className="mt-6 rounded-2xl bg-[#f4f7fb] p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
                   <div><p className="font-bold">Ready to check your luggage?</p><p className="mt-1 text-sm leading-6 text-black/45">First save the airline, flight number, travel date, origin and destination below. Then confirm when you hand the bag to the airline.</p></div>
@@ -492,6 +484,14 @@ export default async function Dashboard({
                         className={field}
                         placeholder="Optional claim reference"
                       />
+                    </label>
+                    <label className="text-sm font-bold">
+                      Airline bag tag number
+                      <input name="airline_bag_tag_number" defaultValue={tag.airline_bag_tag_number ?? ""} className={field} placeholder="Number printed on checked-bag receipt" />
+                    </label>
+                    <label className="text-sm font-bold">
+                      Number of checked bags
+                      <input type="number" min={1} max={20} name="checked_bag_count" defaultValue={tag.checked_bag_count || 1} className={field} />
                     </label>
                   </div>
                 </DashboardPanel>

@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
             actual_departure: flight.actualDeparture,
             scheduled_arrival: flight.scheduledArrival,
             actual_arrival: flight.actualArrival,
+            arrival_terminal: flight.arrivalTerminal,
+            arrival_gate: flight.arrivalGate,
+            baggage_claim: flight.baggageClaim,
             next_reminder_at: next === "landed" && !trip.next_reminder_at && landingTime ? new Date(new Date(landingTime).getTime() + 2 * 60 * 60 * 1000).toISOString() : trip.next_reminder_at,
             updated_at: now.toISOString(),
           }).eq("id", trip.id);
