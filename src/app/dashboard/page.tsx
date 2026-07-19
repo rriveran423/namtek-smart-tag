@@ -15,7 +15,6 @@ import {
   Plus,
   Save,
   Siren,
-  Trash2,
 } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { AirportSearch, AirportStops } from "@/components/airport-search";
@@ -25,10 +24,10 @@ import { RecoveryCenter } from "@/components/recovery-center";
 import { DashboardPanel } from "@/components/dashboard-panel";
 import { JourneyLiveRefresh } from "@/components/journey-live-refresh";
 import { BaggagePickupAssistant } from "@/components/baggage-pickup-assistant";
+import { ClearJourneyForm } from "@/components/clear-journey-form";
 import { createClient } from "@/lib/supabase/server";
 import type { TravelTag } from "@/lib/types";
 import {
-  clearLuggageJourney,
   renameTag,
   signOut,
   startLuggageJourney,
@@ -310,11 +309,7 @@ export default async function Dashboard({
                   <summary className="cursor-pointer list-none px-5 py-4 text-sm font-bold text-red-700">Need to track a different flight?</summary>
                   <div className="border-t border-red-100 px-5 py-4">
                     <p className="text-xs leading-5 text-red-700/75">Clearing permanently removes this active journey and its audit trail, then empties the current flight information. Your luggage tag and profile will not be removed.</p>
-                    <form action={clearLuggageJourney} className="mt-4">
-                      <input type="hidden" name="trip_id" value={activeTrip.id} />
-                      <input type="hidden" name="tag_code" value={tag.public_code} />
-                      <button className="flex items-center gap-2 rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100"><Trash2 size={15} /> Clear current journey</button>
-                    </form>
+                    <ClearJourneyForm tripId={activeTrip.id} tagCode={tag.public_code} />
                   </div>
                 </details>
                 </>
