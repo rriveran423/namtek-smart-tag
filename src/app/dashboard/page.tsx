@@ -71,81 +71,91 @@ export default async function Dashboard({
   const tag = tags.find((item) => item.public_code === params.tag) ?? tags[0];
   const latest = tag?.tag_scans?.[0];
   const field =
-    "mt-2 w-full rounded-xl border border-black/15 bg-white px-4 py-3 outline-none focus:border-[#ff5a36]";
+    "mt-2 w-full rounded-2xl border border-[#d8dee8] bg-[#fbfcfe] px-4 py-3.5 text-[#111827] outline-none transition focus:border-[#2463eb] focus:bg-white focus:ring-4 focus:ring-[#2463eb]/10";
   return (
-    <main className="min-h-screen bg-[#eeebe2]">
-      <nav className="flex items-center justify-between border-b border-black/10 bg-white px-6 py-5 lg:px-10">
-        <Brand />
+    <main className="min-h-screen bg-[#f2f4f7] text-[#121826]">
+      <nav className="flex items-center justify-between border-b border-white/10 bg-[#0f1726] px-6 py-4 lg:px-10">
+        <Brand inverse />
         <div className="flex items-center gap-4">
-          <span className="hidden text-sm text-black/45 sm:block">
+          <span className="hidden text-sm text-white/55 sm:block">
             {user.email}
           </span>
           <form action={signOut}>
-            <button className="text-sm font-bold">Sign out</button>
+            <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/10">
+              Sign out
+            </button>
           </form>
         </div>
       </nav>
       {tag && (
-        <nav className="sticky top-0 z-40 border-b border-black/10 bg-[#eeebe2]/95 px-6 py-3 backdrop-blur">
+        <nav className="sticky top-0 z-40 border-b border-[#dfe4eb] bg-white/90 px-6 py-3 shadow-sm backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto pb-1">
             <a
               href="#luggage"
-              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+              className="whitespace-nowrap rounded-full bg-[#0f1726] px-4 py-2 text-xs font-bold text-white shadow-sm"
             >
               Luggage
             </a>
             <a
               href="#trip"
-              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+              className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
             >
               Trip
             </a>
             <a
               href="#recovery-tools"
-              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+              className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
             >
               Recovery tools
             </a>
             <a
               href="#finder-preferences"
-              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+              className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
             >
               Finder page
             </a>
             <a
               href="#recovery-center"
-              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+              className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
             >
               Messages
             </a>
             <a
               href="#locations"
-              className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold"
+              className="whitespace-nowrap rounded-full border border-[#dfe4eb] bg-white px-4 py-2 text-xs font-bold transition hover:border-[#2463eb] hover:text-[#2463eb]"
             >
               Locations
             </a>
           </div>
         </nav>
       )}
-      <div className="mx-auto max-w-7xl px-6 py-12">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[.16em] text-[#ff5a36]">
-              Traveler dashboard
-            </p>
-            <h1 className="display mt-2 text-4xl font-extrabold">
-              Your journeys
-            </h1>
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-10">
+        <div className="relative mb-8 overflow-hidden rounded-[30px] bg-gradient-to-br from-[#111b2e] via-[#14233b] to-[#183654] p-7 text-white shadow-xl shadow-[#12233b]/10 sm:p-9">
+          <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full bg-[#1dc8ee]/10 blur-3xl" />
+          <div className="absolute -bottom-28 right-40 h-64 w-64 rounded-full bg-[#ff6a32]/10 blur-3xl" />
+          <div className="relative flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.2em] text-[#7bdef4]">
+                Traveler dashboard
+              </p>
+              <h1 className="display mt-3 text-4xl font-extrabold sm:text-5xl">
+                Your journeys
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-white/55">
+                Manage your luggage identity, travel details, recovery tools,
+                and finder conversations in one place.
+              </p>
+            </div>
+            {tag && (
+              <Link
+                target="_blank"
+                href={`/t/${tag.public_code}`}
+                className="flex items-center gap-2 rounded-full border border-white/15 bg-white px-5 py-3 text-sm font-bold text-[#111827] shadow-lg transition hover:-translate-y-0.5"
+              >
+                View finder page <ExternalLink size={15} />
+              </Link>
+            )}
           </div>
-          {tag && (
-            <Link
-              target="_blank"
-              href={`/t/${tag.public_code}`}
-              className="flex items-center gap-2 rounded-full bg-[#171713] px-5 py-3 text-sm font-bold text-white"
-            >
-              View finder page <ExternalLink size={15} />
-            </Link>
-          )}
         </div>
         {params.saved && (
           <div className="mb-6 rounded-xl bg-[#d8ff62] p-4 font-bold">
@@ -175,12 +185,12 @@ export default async function Dashboard({
           </section>
         ) : (
           <>
-            <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
+            <div className="mb-7 flex gap-3 overflow-x-auto pb-2">
               {tags.map((item) => (
                 <Link
                   href={`/dashboard?tag=${item.public_code}`}
                   key={item.id}
-                  className={`min-w-[210px] rounded-2xl border p-4 ${item.id === tag.id ? "border-[#ff5a36] bg-white" : "border-black/10 bg-white/50"}`}
+                  className={`min-w-[225px] rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${item.id === tag.id ? "border-[#2463eb] bg-white ring-4 ring-[#2463eb]/5" : "border-[#dfe4eb] bg-white/70"}`}
                 >
                   <p className="text-xs font-bold uppercase tracking-[.12em] text-black/40">
                     {item.public_code}
@@ -188,13 +198,16 @@ export default async function Dashboard({
                   <p className="mt-1 font-bold">
                     {item.nickname || item.luggage_type || "My luggage"}
                   </p>
-                  <p className="mt-1 text-xs capitalize text-black/45">
+                  <p className="mt-2 flex items-center gap-2 text-xs capitalize text-black/45">
+                    <span
+                      className={`h-2 w-2 rounded-full ${item.status === "lost" ? "bg-[#ff5a36]" : "bg-emerald-500"}`}
+                    />
                     {item.trip_type} · {item.status}
                   </p>
                 </Link>
               ))}
             </div>
-            <div className="grid gap-6 xl:grid-cols-[1.4fr_.6fr]">
+            <div className="grid items-start gap-6 xl:grid-cols-[1.45fr_.55fr]">
               <form action={updateTag} className="space-y-4">
                 <input type="hidden" name="id" value={tag.id} />
                 <DashboardPanel
@@ -515,7 +528,7 @@ export default async function Dashboard({
                     </label>
                   </div>
                 </DashboardPanel>
-                <button className="flex w-full items-center justify-center gap-2 rounded-full bg-[#ff5a36] px-5 py-4 font-bold text-white">
+                <button className="sticky bottom-4 z-20 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#f4512d] to-[#ff7445] px-5 py-4 font-bold text-white shadow-xl shadow-[#f4512d]/20 transition hover:-translate-y-0.5">
                   <Save size={18} /> Save travel profile
                 </button>
               </form>
@@ -529,7 +542,7 @@ export default async function Dashboard({
                 />
                 <section
                   id="locations"
-                  className="scroll-mt-28 rounded-3xl bg-[#171713] p-6 text-white"
+                  className="scroll-mt-28 rounded-3xl bg-gradient-to-br from-[#111b2e] to-[#182a45] p-6 text-white shadow-lg shadow-[#111b2e]/10"
                 >
                   <div className="flex items-center gap-3">
                     <MapPinned className="text-[#d8ff62]" />
@@ -573,7 +586,7 @@ export default async function Dashboard({
                     </div>
                   )}
                 </section>
-                <section className="rounded-3xl bg-white p-6">
+                <section className="rounded-3xl border border-[#dfe4eb] bg-white p-6 shadow-sm">
                   <h3 className="font-bold">Trip profile preview</h3>
                   <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f7f4ec] p-4">
                     {tag.trip_type === "business" ? (
@@ -591,7 +604,7 @@ export default async function Dashboard({
                     </div>
                   </div>
                 </section>
-                <section className="rounded-3xl bg-white p-6">
+                <section className="rounded-3xl border border-[#dfe4eb] bg-white p-6 shadow-sm">
                   <h3 className="font-bold">Recent locations</h3>
                   <div className="mt-4 space-y-3">
                     {tag.tag_scans?.slice(0, 5).map((scan) => (

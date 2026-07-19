@@ -19,11 +19,11 @@ export function DashboardPanel({
     <details
       id={id}
       open={defaultOpen}
-      className="group scroll-mt-28 overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm shadow-black/5"
+      className="group scroll-mt-28 overflow-hidden rounded-[26px] border border-[#dfe4eb] bg-white shadow-[0_8px_30px_rgba(17,24,39,.045)] transition hover:border-[#cfd6e2]"
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 marker:hidden sm:px-7">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 marker:hidden transition hover:bg-[#fafbfd] sm:px-7 sm:py-6">
         <span className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 rounded-2xl bg-[#eef4ff] p-3 text-[#2463eb]">
+          <span className="shrink-0 rounded-2xl bg-gradient-to-br from-[#edf5ff] to-[#e9f2fc] p-3 text-[#1e5fae] ring-1 ring-[#2463eb]/10">
             {icon}
           </span>
           <span className="min-w-0">
@@ -35,11 +35,11 @@ export function DashboardPanel({
             </span>
           </span>
         </span>
-        <span className="shrink-0 rounded-full bg-[#f1eee5] p-2 transition-transform group-open:rotate-180">
+        <span className="shrink-0 rounded-full border border-[#dfe4eb] bg-white p-2 text-black/55 shadow-sm transition-transform group-open:rotate-180">
           <ChevronDown size={17} />
         </span>
       </summary>
-      <div className="border-t border-black/10 px-5 py-6 sm:px-7 sm:py-7">
+      <div className="border-t border-[#e5e9ef] px-5 py-6 sm:px-7 sm:py-8">
         {children}
       </div>
     </details>

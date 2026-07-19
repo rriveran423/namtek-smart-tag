@@ -34,7 +34,7 @@ export function RecoveryCenter({
   return (
     <section
       id="recovery-center"
-      className="scroll-mt-28 rounded-3xl bg-white p-6"
+      className="scroll-mt-28 rounded-3xl border border-[#dfe4eb] bg-white p-6 shadow-sm"
     >
       <div className="flex items-center gap-3">
         <span className="rounded-2xl bg-[#fff1ed] p-3 text-[#ff5a36]">
