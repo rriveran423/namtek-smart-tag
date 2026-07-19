@@ -27,10 +27,6 @@ export async function updateTag(formData: FormData) {
   const values = {
     traveler_name: String(formData.get("traveler_name")),
     finder_message: String(formData.get("finder_message")),
-    public_email: String(formData.get("public_email")),
-    public_phone: String(formData.get("public_phone")),
-    alternate_name: String(formData.get("alternate_name")),
-    alternate_phone: String(formData.get("alternate_phone")),
     preferred_language: String(formData.get("preferred_language")),
     reward_message: String(formData.get("reward_message")),
     nickname: String(formData.get("nickname")),
@@ -51,7 +47,7 @@ export async function updateTag(formData: FormData) {
     tracker_type: String(formData.get("tracker_type")) || null,
     tracker_url: trackerUrl || null,
     recovery_packet_enabled: formData.get("recovery_packet_enabled") === "on",
-    show_direct_contact: formData.get("show_direct_contact") === "on",
+    show_direct_contact: false,
     notification_email:
       String(formData.get("notification_email") ?? "").trim() || null,
     notification_sms_phone: notificationSmsPhone || null,

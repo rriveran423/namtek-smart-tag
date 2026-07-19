@@ -442,24 +442,14 @@ export default async function Dashboard({
                 </section>
                 <section className="border-t border-black/10 pt-8">
                   <h2 className="mb-5 text-xl font-bold">
-                    Finder contact & message
+                    Finder message & preferences
                   </h2>
                   <div className="grid gap-5 sm:grid-cols-2">
-                    <label className="flex items-start gap-3 rounded-2xl bg-[#f7f4ec] p-4 text-sm font-bold sm:col-span-2">
-                      <input
-                        type="checkbox"
-                        name="show_direct_contact"
-                        defaultChecked={tag.show_direct_contact}
-                        className="mt-1 accent-[#ff5a36]"
-                      />
-                      <span>
-                        Show direct phone and email buttons to finders
-                        <span className="mt-1 block text-xs font-normal text-black/45">
-                          Turn this off to communicate only through NamTek’s
-                          private recovery thread.
-                        </span>
-                      </span>
-                    </label>
+                    <p className="rounded-2xl bg-[#eef4ff] p-4 text-sm font-bold text-[#2454a6] sm:col-span-2">
+                      Your phone number and email address are never shown to
+                      finders. All communication stays inside NamTek’s private
+                      recovery thread.
+                    </p>
                     <label className="text-sm font-bold sm:col-span-2">
                       Finder message
                       <textarea
@@ -467,39 +457,6 @@ export default async function Dashboard({
                         name="finder_message"
                         rows={3}
                         defaultValue={tag.finder_message}
-                        className={field}
-                      />
-                    </label>
-                    <label className="text-sm font-bold">
-                      Contact phone
-                      <input
-                        name="public_phone"
-                        defaultValue={tag.public_phone ?? ""}
-                        className={field}
-                      />
-                    </label>
-                    <label className="text-sm font-bold">
-                      Contact email
-                      <input
-                        type="email"
-                        name="public_email"
-                        defaultValue={tag.public_email ?? ""}
-                        className={field}
-                      />
-                    </label>
-                    <label className="text-sm font-bold">
-                      Alternate contact
-                      <input
-                        name="alternate_name"
-                        defaultValue={tag.alternate_name ?? ""}
-                        className={field}
-                      />
-                    </label>
-                    <label className="text-sm font-bold">
-                      Alternate phone
-                      <input
-                        name="alternate_phone"
-                        defaultValue={tag.alternate_phone ?? ""}
                         className={field}
                       />
                     </label>

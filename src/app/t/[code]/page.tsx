@@ -5,10 +5,7 @@ import {
   BriefcaseBusiness,
   Heart,
   Languages,
-  Mail,
   MapPin,
-  MessageCircle,
-  Phone,
   Plane,
   ShieldCheck,
   Siren,
@@ -243,51 +240,6 @@ export default async function FinderPage({
               )}
               <FinderHandoff code={tag.public_code} />
               <LocationShare code={tag.public_code} />
-              <section>
-                <h2 className="mb-3 text-sm font-bold uppercase tracking-[.14em] text-black/40">
-                  <FinderText id="contact" />
-                </h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {tag.public_phone && (
-                    <>
-                      <a
-                        href={`tel:${tag.public_phone}`}
-                        className="flex items-center justify-center gap-2 rounded-2xl bg-[#d8ff62] px-4 py-4 font-bold"
-                      >
-                        <Phone size={18} /> <FinderText id="call" />
-                      </a>
-                      <a
-                        href={`sms:${tag.public_phone}`}
-                        className="flex items-center justify-center gap-2 rounded-2xl bg-[#f1eee5] px-4 py-4 font-bold"
-                      >
-                        <MessageCircle size={18} /> <FinderText id="text" />
-                      </a>
-                    </>
-                  )}
-                  {tag.public_email && (
-                    <a
-                      href={`mailto:${tag.public_email}?subject=I found your NamTek luggage`}
-                      className="flex items-center justify-center gap-2 rounded-2xl bg-[#f1eee5] px-4 py-4 font-bold sm:col-span-2"
-                    >
-                      <Mail size={18} /> <FinderText id="email" />
-                    </a>
-                  )}
-                </div>
-              </section>
-              {tag.alternate_phone && (
-                <section className="rounded-2xl border border-black/10 p-5">
-                  <p className="text-sm text-black/50">
-                    <FinderText id="alternate" />
-                  </p>
-                  <a
-                    href={`tel:${tag.alternate_phone}`}
-                    className="mt-1 flex items-center justify-between font-bold"
-                  >
-                    <span>{tag.alternate_name ?? "Emergency contact"}</span>
-                    <Phone size={17} />
-                  </a>
-                </section>
-              )}
               {tag.reward_message && (
                 <p className="rounded-2xl bg-[#fff1ed] p-5 text-sm font-bold text-[#a53019]">
                   {tag.reward_message}
